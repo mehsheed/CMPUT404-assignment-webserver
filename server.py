@@ -32,7 +32,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
     
     #TODO : Create a HTML_Template function that takes Response Code and generates standard HTML response for response function
-    #TODO : Create a response function that takes in a file path, file type, and status code
+    
 
     def create_response(self, file_path, file_type, status_code):
 
