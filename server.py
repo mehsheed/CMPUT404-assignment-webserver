@@ -34,8 +34,41 @@ class MyWebServer(socketserver.BaseRequestHandler):
     #TODO : Create a HTML_Template function that takes Response Code and generates standard HTML response for response function
     #TODO : Create a response function that takes in a file path, file type, and status code
 
+    def create_response(self, file_path, file_type, status_code):
 
-    
+        #Create a response header
+        response_header = ""
+        response_body = ""
+        response = ""
+        #Create a response body
+        if status_code == 200:
+            f = open(file_path, "r")
+            response_body  = f.read()
+            
+            #genreate response header
+            response = "HTTP/1.1 200 OK\r\n" + "Content-Type: " + file_type + "\r\n" + "Content-Length: " + str(len(response_body)) + "\r\n" + "Connection: Closed\r\n\r\n" + response_body
+            f.close()
+            return response
+        elif status_code == 301:
+         
+            f = open(file_path+"/"+"index.html",'r')   
+            response_body = f.read()
+            response = "HTTP/1.1 301 Moved Permanently\r\n" + "Content-Type: " + file_type + "\r\n" + "Content-Length: " + str(len(response_body)) + "\r\n" +"Connection: keep-alive\r\n" + "Location: " +file_path+ "\r\n" + response_body
+            f.close()
+            return response
+        
+            
+
+
+            
+
+
+
+
+
+
+
+
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
@@ -59,16 +92,16 @@ class MyWebServer(socketserver.BaseRequestHandler):
         if request_method == "GET":
             
             directory_traversal = "/../" in request_path
-            path = prefix + request_path
+            path = prefix+request_path
             #Validate path
             start_char = request_path[0]
             end_char = request_path[-1]
             valid_path = (start_char == "/" and end_char == "/")
 
-            if not (directory_traversal) and valid_path:
+            if valid_path and not directory_traversal:
 
                 #Check if path is a directory
-                if os.path.isdir():
+                if os.path.isdir(path):
                     #Create file path to serve the 'index.html' file within the specified address
                     file_path = prefix + request_path + "index.html"
                     #Check if the 'file_path' reffered "in"file exists
@@ -90,9 +123,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
                 elif os.path.isdir(path+"/"):
 
-                    moved_path = path + "/"
+                    
                     #Create 301 Moved Permanently response and redirect
-                    response = self.create_response(moved_path, file_type,301)
+                    response = self.create_response(path, file_type,301)
                     self.request.sendall(bytearray(response,'utf-8'))
             #Handle directory traversal attempts and invalid paths
             else:
