@@ -46,16 +46,23 @@ class MyWebServer(socketserver.BaseRequestHandler):
             response_body  = f.read()
             
             #genreate response header
-            response = "HTTP/1.1 200 OK\r\n" + "Content-Type: " + file_type + "\r\n" + "Content-Length: " + str(len(response_body)) + "\r\n" + "Connection: Closed\r\n\r\n" + response_body
+            response = "HTTP/1.1 200 OK\r\n" + "Content-Type: " + file_type + "\r\n" + "Content-Length: " + str(len(response_body)) + "\r\n" + "Connection: close\r\n\r\n" + response_body
             f.close()
             return response
         elif status_code == 301:
          
             f = open(file_path+"/"+"index.html",'r')   
             response_body = f.read()
-            response = "HTTP/1.1 301 Moved Permanently\r\n" + "Content-Type: " + file_type + "\r\n" + "Content-Length: " + str(len(response_body)) + "\r\n" +"Connection: keep-alive\r\n" + "Location: " +file_path+ "\r\n" + response_body
+            response = "HTTP/1.1 301 Moved Permanently\r\n" + "Content-Type: " + file_type + "\r\n" + "Content-Length: " + str(len(response_body)) + "\r\n" +"Connection: keep-alive\r\n" + "Location: " +file_path+ "\r\n\r\n" + response_body
             f.close()
             return response
+        elif status_code == 404:
+            response_body,content_len = create_html_template_error(status_code)
+            response = "HTTP/1.1 404 Not Found\r\n" + "Content-Type: " + "text/html" + "\r\n" +"Rferrer-Policy: "+"no-referrer\r\n" +"Content-Length: " + content_len + "\r\n" +"Connection: close" + "\r\n\r\n" + response_body
+            return response
+        elif status_code == 405:
+            response_body,content_len = create_html_template_error(status_code)
+            response = "HTTP/1.1 405 Method Not Allowed\r\n" + "Allow: GET\r\n" +""+"Content-Type: " + "text/html" + "Content-Length: " + content_len+ "\r\n" +"Connection: close" + "\r\n\r\n" + response_body
         
             
 
