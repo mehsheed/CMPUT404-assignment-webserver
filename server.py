@@ -33,6 +33,9 @@ class MyWebServer(socketserver.BaseRequestHandler):
     
     #TODO : Create a HTML_Template function that takes Response Code and generates standard HTML response for response function
     #TODO : Create a response function that takes in a file path, file type, and status code
+
+
+    
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
@@ -85,7 +88,24 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     response = self.create_response(path, file_type,200)
                     self.request.sendall(bytearray(response,'utf-8'))   
 
-                
+                elif os.path.isdir(path+"/"):
+
+                    moved_path = path + "/"
+                    #Create 301 Moved Permanently response and redirect
+                    response = self.create_response(moved_path, file_type,301)
+                    self.request.sendall(bytearray(response,'utf-8'))
+            #Handle directory traversal attempts and invalid paths
+            else:
+
+                response = self.create_response(None, file_type,404)
+                self.request.sendall(bytearray(response,'utf-8'))
+        #Handle non-GET requests
+        else:
+            response = self.create_response(None, None,405)
+            self.request.sendall(bytearray(response,'utf-8')) 
+
+
+
 
 
 
