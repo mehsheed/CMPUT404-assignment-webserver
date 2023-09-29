@@ -32,7 +32,36 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
     
     #TODO : Create a HTML_Template function that takes Response Code and generates standard HTML response for response function
-    
+    def create_html_template_error(self,status_code):
+        if status_code == 404:
+            response_body = """<!DOCTYPE html>
+                                <html>
+                                <head>
+                                    <title>404 - Page Not Found</title>
+                                </head>
+                                <body>
+                                    <h1>404 - Page Not Found</h1>
+                                    <p>The page you are looking for does not exist.</p>
+                                </body>
+                                </html> """
+            body_len = str(len(response_body))
+            return response_body,body_len
+        elif status_code == 405:
+            response_body = """<!DOCTYPE html>
+                                <html>
+                                <head>
+                                    <title>405 - Method Not Allowed</title>
+                                </head>
+                                <body>
+                                    <h1>405 - Method Not Allowed</h1>
+                                    <p>The method you are using is not allowed.</p>
+                                </body>
+                                </html> """
+            body_len = str(len(response_body))
+            return response_body,body_len
+
+
+
 
     def create_response(self, file_path, file_type, status_code):
 
@@ -50,22 +79,32 @@ class MyWebServer(socketserver.BaseRequestHandler):
             f.close()
             return response
         elif status_code == 301:
-         
-            f = open(file_path+"/"+"index.html",'r')   
+            f = open(file_path + "index.html",'r')
             response_body = f.read()
-            response = "HTTP/1.1 301 Moved Permanently\r\n" + "Content-Type: " + file_type + "\r\n" + "Content-Length: " + str(len(response_body)) + "\r\n" +"Connection: keep-alive\r\n" + "Location: " +file_path+ "\r\n\r\n" + response_body
+            response = "HTTP/1.1 301 Moved Permanently\r\n" + "Content-Type: " + file_type + "\r\n" + "Content-Length: " + str(len(response_body)) + "\r\n" +"Connection: close\r\n" + "Location: " +file_path+"/"+ "\r\n\r\n" + response_body
             f.close()
+            
             return response
         elif status_code == 404:
-            response_body,content_len = create_html_template_error(status_code)
-            response = "HTTP/1.1 404 Not Found\r\n" + "Content-Type: " + "text/html" + "\r\n" +"Rferrer-Policy: "+"no-referrer\r\n" +"Content-Length: " + content_len + "\r\n" +"Connection: close" + "\r\n\r\n" + response_body
+            response_body,content_len = self.create_html_template_error(status_code)
+            response = "HTTP/1.1 404 Not Found\r\n" + "Content-Type: " + "text/html" + "\r\n" +"Referrer-Policy: "+"no-referrer\r\n" +"Content-Length: " + content_len + "\r\n" +"Connection: close" + "\r\n\r\n" + response_body
             return response
         elif status_code == 405:
-            response_body,content_len = create_html_template_error(status_code)
+            response_body,content_len = self.create_html_template_error(status_code)
             response = "HTTP/1.1 405 Method Not Allowed\r\n" + "Allow: GET\r\n" +""+"Content-Type: " + "text/html" + "Content-Length: " + content_len+ "\r\n" +"Connection: close" + "\r\n\r\n" + response_body
+            return response
+        
+    
         
             
+    def check_file_type(self, file_path):
 
+        if ".html" in file_path:
+            return "text/html"
+        elif ".css" in file_path:
+            return "text/css"
+        else:
+            return None
 
             
 
@@ -98,12 +137,13 @@ class MyWebServer(socketserver.BaseRequestHandler):
         #Check if request is a GET request
         if request_method == "GET":
             
-            directory_traversal = "/../" in request_path
+            
             path = prefix+request_path
+            directory_traversal = "/../" in request_path
             #Validate path
             start_char = request_path[0]
             end_char = request_path[-1]
-            valid_path = (start_char == "/" and end_char == "/")
+            valid_path = start_char == "/" and end_char == "/"
 
             if valid_path and not directory_traversal:
 
@@ -114,25 +154,30 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     #Check if the 'file_path' reffered "in"file exists
                     if os.path.isfile(file_path):
                         #Create 200 OK response
-                        response = self.create_response(file_path, file_type,200)
+                        response = self.create_response(file_path,"text/html",200)
                         #Send response
                         self.request.sendall(bytearray(response,'utf-8'))
                 #Path is a file
                 else:
                     file_path = prefix + "/index.html"
-                    response = self.create_response(file_path, file_type,200)
+                    response = self.create_response(file_path,"text/html",200)
                     self.request.sendall(bytearray(response,'utf-8'))
-            elif (os.path.exists(path) and not directory_traversal):
+
+
+            elif os.path.exists(path) and not directory_traversal:
+
                 if os.path.isfile(path):
                     #Serve the file at "path" with the specified 'file_type'
                     response = self.create_response(path, file_type,200)
                     self.request.sendall(bytearray(response,'utf-8'))   
 
                 elif os.path.isdir(path+"/"):
-
                     
+
+                    redirect_path = path+"/"
+                    print(redirect_path)
                     #Create 301 Moved Permanently response and redirect
-                    response = self.create_response(path, file_type,301)
+                    response = self.create_response(redirect_path, file_type,301)
                     self.request.sendall(bytearray(response,'utf-8'))
             #Handle directory traversal attempts and invalid paths
             else:
@@ -143,7 +188,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
         else:
             response = self.create_response(None, None,405)
             self.request.sendall(bytearray(response,'utf-8')) 
-
 
 
 
