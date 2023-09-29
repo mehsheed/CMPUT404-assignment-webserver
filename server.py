@@ -87,22 +87,23 @@ class MyWebServer(socketserver.BaseRequestHandler):
             response_body,content_len = self.create_html_template_error(status_code)
             response = "HTTP/1.1 405 Method Not Allowed\r\n" + "Allow: GET\r\n" +""+"Content-Type: " + "text/html" + "Content-Length: " + content_len+ "\r\n" +"Connection: close" + "\r\n\r\n" + response_body
             return response
-        # elif status_code == 301:
-        #     f = open(file_path + "index.html",'r')
-        #     response_body = f.read()
-        #     response = "HTTP/1.1 301 Moved Permanently\r\n" + "Content-Type: " + file_type + "\r\n" + "Content-Length: " + str(len(response_body)) + "\r\n" +"Connection: close\r\n" + "Location: " +file_path+"/"+ "\r\n\r\n" + response_body
-        #     f.close()
+        elif status_code == 301:
+            f = open(file_path + "index.html",'r')
+            response_body = f.read()
+            response = "HTTP/1.1 301 Moved Permanently\r\n" + "Content-Type: " + file_type + "\r\n" + "Content-Length: " + str(len(response_body)) + "\r\n" +"Connection: keep-alive\r\n" + "Location: " +file_path+ "\r\n\r\n" + response_body
+            f.close()
+            return response
 
 
         
     
-    def moved_permanently_response(self, redirect_path, file_type):
-        f = open(redirect_path+"index.html", 'r')
-        response_body = f.read()
-        response = "HTTP/1.1 301 Moved Permanently\r\n" + "\r\n"+"Location: "+redirect_path+"index.html"+"\r\n"+"Content-Type: " + file_type + "\r\n" + "Content-Length: " + str(len(response_body)) + "\r\n" + \
-        "Connection: close\r\n\r\n" + response_body
-        f.close()
-        return response
+    # def moved_permanently_response(self, redirect_path, file_type):
+    #     f = open(redirect_path+"index.html", 'r')
+    #     response_body = f.read()
+    #     response = "HTTP/1.1 301 Moved Permanently\r\n" + "\r\n"+"Location: "+redirect_path+"index.html"+"\r\n"+"Content-Type: " + file_type + "\r\n" + "Content-Length: " + str(len(response_body)) + "\r\n" + \
+    #     "Connection: keep-alive\r\n\r\n" + response_body
+    #     f.close()
+    #     return response
         
             
             
@@ -186,7 +187,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     redirect_path = path+"/"
                     print(redirect_path)
                     #Create 301 Moved Permanently response and redirect
-                    response = self.moved_permanently_response(redirect_path, file_type)
+                    # response = self.moved_permanently_response(redirect_path, file_type)
+                    response = self.create_response(redirect_path, file_type,301)
                     self.request.sendall(bytearray(response,'utf-8'))
             #Handle directory traversal attempts and invalid paths
             else:
