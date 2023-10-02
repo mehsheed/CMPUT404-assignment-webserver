@@ -136,36 +136,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
             f.close()
             return response
 
-    def moved_permanently_response(self, redirect_path, file_type):
-        f = open(redirect_path + "index.html", "r")
-        response_body = f.read()
-        response = (
-            "HTTP/1.1 301 Moved Permanently\r\n"
-            + "\r\n"
-            + "Location: "
-            + redirect_path
-            + "index.html"
-            + "\r\n"
-            + "Content-Type: "
-            + file_type
-            + "\r\n"
-            + "Content-Length: "
-            + str(len(response_body))
-            + "\r\n"
-            + "Connection: keep-alive\r\n\r\n"
-            + response_body
-        )
-        f.close()
-        return response
-
-    def check_file_type(self, file_path):
-        if ".html" in file_path:
-            return "text/html"
-        elif ".css" in file_path:
-            return "text/css"
-        else:
-            return None
-
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print("Got a request of: %s\n" % self.data)
@@ -222,7 +192,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
 
                     # Create 301 Moved Permanently response and redirect
 
-                    # response = self.moved_permanently_response(redirect_path, file_type)
                     response = self.create_response(redirect_path, file_type, 301)
                     self.request.sendall(bytearray(response, "utf-8"))
             # Handle directory traversal attempts and invalid paths
