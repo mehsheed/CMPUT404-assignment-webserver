@@ -28,3 +28,14 @@ compatible) http://docs.python.org/2/library/socketserver.html
 Collaborators
 ========================
 * Furmaan Sekhon
+
+Resources
+========================
+Manipulating and checking path Resources:
+- https://docs.python.org/3/library/os.path.html
+- https://www.tutorialspoint.com/os-path-module-in-python
+
+HTTP Server implementation, response and HTML Template Resources:
+- https://uofa-cmput404.github.io/slides-xt/decks/http.html
+- https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+- https://www.w3schools.com/html/html_basic.asp
