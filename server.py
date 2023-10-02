@@ -29,6 +29,7 @@ import os
 
 
 class MyWebServer(socketserver.BaseRequestHandler):
+    # Function for generating a html template for error pages (400s)
     def create_html_template_error(self, status_code):
         if status_code == 404:
             response_body = """<!DOCTYPE html>
@@ -58,16 +59,13 @@ class MyWebServer(socketserver.BaseRequestHandler):
             return response_body, body_len
 
     def create_response(self, file_path, file_type, status_code):
-        # Create a response header
-        response_header = ""
         response_body = ""
         response = ""
-        # Create a response body
+        # genreate response header and body as per the status code
         if status_code == 200:
             f = open(file_path, "r")
             response_body = f.read()
 
-            # genreate response header
             response = (
                 "HTTP/1.1 200 OK\r\n"
                 + "Content-Type: "
@@ -139,7 +137,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print("Got a request of: %s\n" % self.data)
-        # self.request.sendall(bytearray("OK",'utf-8'))
+
         decoded_data = self.data.decode("utf-8")
 
         split_data = decoded_data.split()
