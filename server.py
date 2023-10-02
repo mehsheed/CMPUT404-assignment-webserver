@@ -58,10 +58,11 @@ class MyWebServer(socketserver.BaseRequestHandler):
             body_len = str(len(response_body))
             return response_body, body_len
 
+    # Function for generating standard responses and fetching response body
     def create_response(self, file_path, file_type, status_code):
         response_body = ""
         response = ""
-        # genreate response header and body as per the status code
+        
         if status_code == 200:
             f = open(file_path, "r")
             response_body = f.read()

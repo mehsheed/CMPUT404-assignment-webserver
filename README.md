@@ -39,3 +39,4 @@ HTTP Server implementation, response and HTML Template Resources:
 - https://uofa-cmput404.github.io/slides-xt/decks/http.html
 - https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
 - https://www.w3schools.com/html/html_basic.asp
+- https://www.digitalocean.com/community/tutorials/python-string-encode-decode
